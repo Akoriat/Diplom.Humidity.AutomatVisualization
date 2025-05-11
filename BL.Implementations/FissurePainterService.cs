@@ -14,17 +14,12 @@ public sealed class FissurePainterService
         _rnd = new Random(cfg.RandomSeed);
     }
 
-    public void GenerateCracks(SoilSlice slice)
+    public void GenerateCracks(SoilSlice s)
     {
-        int w = slice.Width;
-        int h = slice.Height;
-        int cracks = Math.Max(1, w / _cfg.CrackDensity);
-
-        for (int i = 0; i < cracks; i++)
-        {
-            int startX = _rnd.Next(1, w - 1);
-            Dig(slice, startX, 0);
-        }
+        s.CrackCells.Clear();
+        var rnd = new Random();
+        while (s.CrackCells.Count < 4)
+            s.CrackCells.Add(rnd.Next(0, s.Width));
     }
 
     private void Dig(SoilSlice s, int x, int y)

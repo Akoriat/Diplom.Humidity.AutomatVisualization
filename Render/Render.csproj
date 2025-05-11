@@ -5,10 +5,16 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BL.Interfaces\BL.Interfaces.csproj" />
+    <PackageReference Include="WriteableBitmapEx" Version="1.6.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BL.Implementations\BL.Implementations.csproj" />
+    <ProjectReference Include="..\Configs\Configs.csproj" />
     <ProjectReference Include="..\Entities\Entities.csproj" />
   </ItemGroup>
 

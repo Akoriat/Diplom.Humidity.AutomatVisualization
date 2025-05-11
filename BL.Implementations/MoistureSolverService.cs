@@ -29,7 +29,7 @@ public sealed class MoistureSolverService
                     byte m = moisture[idx];
 
                     int down = idx + w;
-                    if (cracks[down] && moisture[down] + _cfg.DripAmount < m)
+                    if (moisture[down] + _cfg.DripAmount < m)
                     {
                         _buffer[down] = (byte)(moisture[down] + _cfg.DripAmount);
                         m -= _cfg.DripAmount;

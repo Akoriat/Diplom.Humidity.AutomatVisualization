@@ -10,6 +10,8 @@ public sealed class SoilSlice
     private readonly byte[] _moisture;
     private readonly bool[] _cracks;
 
+    public HashSet<int> CrackCells { get; } = new();
+
     public SoilSlice(SimulationSettings cfg)
     {
         Width = cfg.Width;
@@ -21,9 +23,24 @@ public sealed class SoilSlice
     public byte[] MoistureArray => _moisture;
     public bool[] CrackMask => _cracks;
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref byte Moisture(int x, int y) => ref _moisture[y * Width + x];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref bool Crack(int x, int y) => ref _cracks[y * Width + x];
+
+    public void GenerateCracks(SoilSlice s)
+    {
+        var rnd = new Random();
+        int w = s.Width;
+        s.CrackCells.Clear();
+
+        while (s.CrackCells.Count < 4)
+        {
+            int x = rnd.Next(0, w);
+            s.CrackCells.Add(x);
+        }
+    }
+
 }
