@@ -1,0 +1,31 @@
+﻿<Window x:Class="UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="640" Width="1024">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ПАНЕЛЬ — центрируем горизонтально -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,8">
+            <Button Content="Старт" Width="90" Click="Start_Click"/>
+            <Button Content="Стоп"  Width="90" Click="Stop_Click"/>
+            <Button Content="Шаг"   Width="90" Click="Step_Click"/>
+            <TextBlock Text="FPS:"  VerticalAlignment="Center" Margin="16,0,0,0"/>
+            <TextBlock x:Name="FpsLabel" Foreground="Lime" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- ПОЛЕ -->
+        <Border Grid.Row="1" Margin="12,0,12,12" BorderBrush="Black" BorderThickness="1">
+            <Image x:Name="SurfaceImage" Stretch="None" SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+        </Border>
+    </Grid>
+</Window>
