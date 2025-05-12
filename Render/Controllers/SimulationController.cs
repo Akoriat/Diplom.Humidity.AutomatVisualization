@@ -13,14 +13,15 @@ public sealed class SimulationController
     private readonly SimulationSettings _cfg;
     private readonly SoilSlice _slice;
     private readonly FissurePainterService _painter;
-    private readonly MoistureAutomatonService _automaton;
+    private readonly RichardsAutomatonService _automaton;
+    private readonly MoistureSolverService _moistureSolver;
     private readonly DispatcherTimer _timer;
     private readonly ColorRamp _ramp = new ColorRamp();
     private readonly Action<WriteableBitmap> _onFrame;
 
     public SimulationController(Action<WriteableBitmap> onFrame,
-                                int width = 256,
-                                int height = 128,
+                                int width = 50,
+                                int height = 50,
                                 int fps = 30)
     {
         double clientW = SystemParameters.WorkArea.Width - 40;
@@ -36,9 +37,12 @@ public sealed class SimulationController
         _painter = new FissurePainterService(_cfg);
         _painter.GenerateCracks(_slice);
 
-        _automaton = new MoistureAutomatonService(
-                 _slice,
-                 new HumidityModel(_cfg.DripAmount));
+        _automaton = new RichardsAutomatonService(
+            _slice,
+            dt: 5.0, 
+            Ks: 1.0);
+
+        _moistureSolver = new MoistureSolverService(_cfg);
 
         _onFrame = onFrame;
 
@@ -62,6 +66,7 @@ public sealed class SimulationController
 
     private void Tick()
     {
+        _moistureSolver.Tick(_slice);
         _automaton.Tick();
         _onFrame(SliceRenderer.Render(_slice, _ramp));
     }
