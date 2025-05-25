@@ -1,50 +1,141 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using BL.Implementations;
+using Common.Configs;
+using Microsoft.Win32;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+using System.Windows.Threading;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Render.Controllers;
 
 namespace UI
 {
     public partial class MainWindow : Window
     {
-        private readonly SimulationController _sim;
-        private readonly Stopwatch _fpsWatch = new();
-        private int _frames;
+        private SoilSimulator simulator;
+        private DispatcherTimer timer;
 
         public MainWindow()
         {
             InitializeComponent();
-            _sim = new SimulationController(OnFrameReady);
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(100);
+            timer.Tick += Timer_Tick;
         }
-        private void OnFrameReady(WriteableBitmap bmp)
+
+        private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            SurfaceImage.Source = bmp;
-            if (!_fpsWatch.IsRunning) _fpsWatch.Start();
-            if (++_frames == 30)
+            timer.Stop();
+
+            int width = (int)WidthSlider.Value;
+            int height = (int)HeightSlider.Value;
+            double conductivity = ConductivitySlider.Value;
+            double rainVolume = TimeStepSlider.Value;
+            double initialMoisture = InitialMoistureSlider.Value / 100.0;
+            double crackChance = CrackChanceSlider.Value / 100.0;
+
+            simulator = new SoilSimulator(width, height);
+
+            simulator.Conductivity = conductivity;
+            simulator.RainVolumeLiters = rainVolume;
+
+            for (int r = 0; r < simulator.Height; r++)
             {
-                double fps = 30 / _fpsWatch.Elapsed.TotalSeconds;
-                FpsLabel.Text = ((int)fps).ToString();
-                _frames = 0;
-                _fpsWatch.Restart();
+                for (int c = 0; c < simulator.Width; c++)
+                {
+                    simulator.Grid[r, c].Moisture = initialMoisture;
+                }
+            }
+
+            var rand = new Random();
+            for (int r = 0; r < simulator.Height; r++)
+            {
+                for (int c = 0; c < simulator.Width; c++)
+                {
+                    if (rand.NextDouble() < crackChance)
+                    {
+                        simulator.Grid[r, c].IsCracked = true;
+                    }
+                }
+            }
+
+            timer.Start();
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (simulator == null)
+                return;
+
+            simulator.Step();
+
+            var renderer = new SliceRenderer(simulator.Width, simulator.Height);
+            var bmp = renderer.Render(simulator.Grid);
+            SimulationImage.Source = bmp;
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            timer.Stop();
+        }
+
+        private void RestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            timer.Stop();
+
+            
+            StartButton_Click(sender, e);
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (simulator == null)
+                return;
+
+            var dlg = new SaveFileDialog
+            {
+                Filter = "Состояние симуляции|*.dat|Все файлы|*.*",
+                DefaultExt = "dat"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    simulator.SaveState(dlg.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при сохранении: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
-        private void Start_Click(object sender, RoutedEventArgs e) => _sim.Start();
-        private void Stop_Click(object sender, RoutedEventArgs e) => _sim.Stop();
-        private void Step_Click(object sender, RoutedEventArgs e) => _sim.Step();
 
-        protected override void OnRenderSizeChanged(SizeChangedInfo info)
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
-            base.OnRenderSizeChanged(info);
-            _sim.RecomputeScale((int)info.NewSize.Width, (int)info.NewSize.Height);
-        }
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Состояние симуляции|*.dat|Все файлы|*.*",
+                DefaultExt = "dat"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    timer.Stop();
 
+                    simulator = SoilSimulator.LoadState(dlg.FileName);
+
+                    WidthSlider.Value = simulator.Width;
+                    HeightSlider.Value = simulator.Height;
+                    ConductivitySlider.Value = simulator.Conductivity;
+                    TimeStepSlider.Value = simulator.RainVolumeLiters;
+
+                    var renderer = new SliceRenderer(simulator.Width, simulator.Height);
+                    var bmp = renderer.Render(simulator.Grid);
+                    SimulationImage.Source = bmp;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
 }
