@@ -68,8 +68,11 @@ namespace BL.Implementations
                 {
                     double kUp = slices[r, c].HydraulicConductivity();
                     double kDown = slices[r + 1, c].HydraulicConductivity();
-                    double k = 0.5 * (kUp + kDown);
+                    double hDiff = kUp - kDown;
+                    double k = Math.Max(1e-10, 0.5 * (kUp + kDown));
                     double diff = slices[r, c].WaterPotential() - slices[r + 1, c].WaterPotential();
+                    if (double.IsInfinity(hDiff))
+                        continue;
                     double flow = k * diff * TimeStep / Dz;
                     //double diff = slices[r, c].Moisture - slices[r + 1, c].Moisture;
                     //double k = slices[r, c].IsCracked || slices[r + 1, c].IsCracked ? Conductivity * 10 : Conductivity;
@@ -83,8 +86,11 @@ namespace BL.Implementations
                 {
                     double kUp = slices[r, c].HydraulicConductivity();
                     double kDown = slices[r, c + 1].HydraulicConductivity();
-                    double k = 0.5 * (kUp + kDown);
+                    double hDiff = kUp - kDown;
+                    double k = Math.Max(1e-10, 0.5 * (kUp + kDown));
                     double diff = slices[r, c].WaterPotential() - slices[r, c + 1].WaterPotential();
+                    if (double.IsInfinity(hDiff))
+                        continue;
                     double flow = k * diff * TimeStep / Dx;
                     //double diff = slices[r, c].Moisture - slices[r, c + 1].Moisture;
                     //double k = slices[r, c].IsCracked || slices[r, c + 1].IsCracked ? Conductivity * 10 : Conductivity;
