@@ -27,7 +27,7 @@ namespace UI
             int width = (int)WidthSlider.Value;
             int height = (int)HeightSlider.Value;
             double conductivity = ConductivitySlider.Value;
-            double rainVolume = TimeStepSlider.Value;
+            double rainVolume = RainSlider.Value;
             double initialMoisture = InitialMoistureSlider.Value / 100.0;
             double crackChance = CrackChanceSlider.Value / 100.0;
 
@@ -35,6 +35,7 @@ namespace UI
 
             simulator.Conductivity = conductivity;
             simulator.RainVolumeLiters = rainVolume;
+            simulator.TimeStep = TimeStepSlider.Value;
 
             for (int r = 0; r < simulator.Height; r++)
             {
@@ -137,5 +138,11 @@ namespace UI
                 }
             }
         }
+        private void RainSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (simulator != null)
+                simulator.RainVolumeLiters = e.NewValue;
+        }
+
     }
 }

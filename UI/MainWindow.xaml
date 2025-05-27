@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Моделирование увлажнения почвы" Height="600" Width="800">
     <TabControl>
-        <!-- Вкладка визуализации -->
         <TabItem Header="Simulation">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
@@ -11,17 +10,15 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Область визуализации с границей и фоном -->
-                <Border Grid.Row="0" Grid.Column="0" Background="White" BorderBrush="Black" BorderThickness="1" Margin="5">
-                    <Image Name="SimulationImage" Stretch="Uniform" />
+                <Border Grid.Row="0" Grid.Column="0" Background="White" BorderBrush="Black" BorderThickness="1" Margin="5,5,5,5">
+                    <Image Name="SimulationImage" Stretch="Fill" SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                 </Border>
 
-                <!-- Цветовая легенда справа -->
-                <StackPanel Grid.Row="0" Grid.Column="1" Margin="10">
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,10,10,10">
                     <TextBlock Text="Легенда:" FontWeight="Bold" Margin="0 0 0 5"/>
                     <StackPanel Orientation="Horizontal" Margin="0 2">
                         <Rectangle Width="20" Height="20" Fill="White" Stroke="Black"/>
@@ -41,8 +38,7 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Кнопки управления внизу -->
-                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5" >
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="167,5,0,5" >
                     <Button Name="StartButton" Content="Пуск" Width="80" Margin="5" Click="StartButton_Click"/>
                     <Button Name="StopButton" Content="Стоп" Width="80" Margin="5" Click="StopButton_Click"/>
                     <Button Name="SaveButton" Content="Сохранить" Width="80" Margin="5" Click="SaveButton_Click"/>
@@ -52,12 +48,11 @@
             </Grid>
         </TabItem>
 
-        <!-- Вкладка настроек -->
-        <TabItem Header="Settings">
+        <TabItem Header="Settings" Height="22" Margin="-2,-2,-2,0" VerticalAlignment="Top">
             <StackPanel Margin="10">
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Text="Ширина сетки:" Width="150" VerticalAlignment="Center"/>
-                    <Slider Name="WidthSlider" Minimum="10" Maximum="200" Value="100" Width="200" 
+                    <Slider Name="WidthSlider" Minimum="10" Maximum="500" Value="100" Width="200" 
                             TickFrequency="10" IsSnapToTickEnabled="True" Margin="5 0"/>
                     <TextBlock Text="{Binding ElementName=WidthSlider, Path=Value, StringFormat=N0}" 
                                Width="40" VerticalAlignment="Center" Margin="5 0 0 0"/>
@@ -92,10 +87,20 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Text="Вероятность трещин (%):" Width="150" VerticalAlignment="Center"/>
-                    <Slider Name="CrackChanceSlider" Minimum="0" Maximum="100" Value="0" Width="200" 
-                            TickFrequency="10" IsSnapToTickEnabled="True" Margin="5 0"/>
+                    <Slider Name="CrackChanceSlider" Minimum="1" Maximum="100" Value="1" Width="200" 
+                            TickFrequency="1" IsSnapToTickEnabled="True" Margin="5 0"/>
                     <TextBlock Text="{Binding ElementName=CrackChanceSlider, Path=Value, StringFormat=N0}" 
                                Width="40" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Margin="12">
+                    <TextBlock Text="Дождь (мм/шаг)" FontWeight="Bold" Margin="0,0,0,4"/>
+                    <Slider
+                    Width="200" ValueChanged="RainSlider_ValueChanged" Value="5" TickPlacement="BottomRight" TickFrequency="5" SmallChange="0.5" x:Name="RainSlider" Minimum="0" Maximum="200" LargeChange="1" IsSnapToTickEnabled="True"/>
+                    <TextBlock Text="{Binding ElementName=RainSlider,
+                              Path=Value,
+                              StringFormat='{}{0:F1} мм'}"
+               FontSize="12"
+               Margin="0,4,0,0"/>
                 </StackPanel>
             </StackPanel>
         </TabItem>
