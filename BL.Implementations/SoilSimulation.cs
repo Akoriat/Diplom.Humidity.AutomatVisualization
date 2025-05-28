@@ -1,6 +1,7 @@
 ﻿using Common.Entities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,8 +13,8 @@ namespace BL.Implementations
     {
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public double Dz { get; private set; }
-        public double Dx { get; private set; }
+        public double Dz { get; set; }
+        public double Dx { get; set; }
         private SoilSlice[,] slices;
         public SoilSlice[,] Grid => slices;
 
@@ -22,8 +23,9 @@ namespace BL.Implementations
         public double Conductivity { get; set; } = 0.1;
         public double TimeStep { get; set; } = 1.0;
 
+        public event Action<double>? StepCompleted;
 
-        public SoilSimulator(int width, int height, double dz = 0.02, double dx = 0.02)
+        public SoilSimulator(int width, int height, double dz = 0.02, double dx = 0.03)
         {
             Width = width;
             Height = height;
@@ -33,9 +35,20 @@ namespace BL.Implementations
                     slices[r, c] = new SoilSlice();
             RainVolumeLiters = 0.0;
             Dz = dz;
-            Dx = dx == 0 ? dz : dx;
+            if (dx <= 0.0) dx = dz;
+            Dx = dx;
         }
-
+        public void ExportCsv(string filePath)
+        {
+            using var writer = new StreamWriter(filePath, false, Encoding.UTF8);
+            for (int y = 0; y < Height; y++)
+            {
+                var values = new string[Width];
+                for (int x = 0; x < Width; x++)
+                    values[x] = slices[y, x].Moisture.ToString("F4", CultureInfo.InvariantCulture);
+                writer.WriteLine(string.Join(';', values));
+            }
+        }
         public void Step()
         {
             double[,] newMoisture = new double[Height, Width];
@@ -62,6 +75,8 @@ namespace BL.Implementations
                     RainVolumeLiters -= addVolume;
                 }
             }
+
+            double dxy = Math.Sqrt(Dx * Dx + Dz * Dz);
 
             for (int c = 0; c < Width; c++)
                 for (int r = 0; r < Height - 1; r++)
@@ -100,6 +115,42 @@ namespace BL.Implementations
                     newMoisture[r, c + 1] += flow;
                 }
 
+            for (int r = 0; r < Height - 1; r++)
+                for (int c = 0; c < Width - 1; c++)
+                {
+                    double k1 = slices[r, c].HydraulicConductivity();
+                    double k2 = slices[r + 1, c + 1].HydraulicConductivity();
+                    double k = Math.Max(1e-10, 0.5 * (k1 + k2));
+
+                    double diff = slices[r, c].WaterPotential() -
+                                  slices[r + 1, c + 1].WaterPotential();
+                    if (double.IsInfinity(diff) || double.IsNaN(diff))
+                        continue;
+
+                    double flow = k * diff * TimeStep / dxy;
+
+                    newMoisture[r, c] -= flow;
+                    newMoisture[r + 1, c + 1] += flow;
+                }
+
+            for (int r = 0; r < Height - 1; r++)
+                for (int c = 1; c < Width; c++)
+                {
+                    double k1 = slices[r, c].HydraulicConductivity();
+                    double k2 = slices[r + 1, c - 1].HydraulicConductivity();
+                    double k = Math.Max(1e-10, 0.5 * (k1 + k2));
+
+                    double diff = slices[r, c].WaterPotential() -
+                                  slices[r + 1, c - 1].WaterPotential();
+                    if (double.IsInfinity(diff) || double.IsNaN(diff))
+                        continue;
+
+                    double flow = k * diff * TimeStep / dxy;
+
+                    newMoisture[r, c] -= flow;
+                    newMoisture[r + 1, c - 1] += flow;
+                }
+
             for (int r = 0; r < Height; r++)
                 for (int c = 0; c < Width; c++)
                 {
@@ -111,10 +162,33 @@ namespace BL.Implementations
                     if (newMoisture[r, c] > θmax) newMoisture[r, c] = θmax;
                     slices[r, c].Moisture = newMoisture[r, c];
                 }
+
+            double mean = slices
+                .Cast<SoilSlice>()
+                .Average(s => s.Moisture);
+
+            StepCompleted?.Invoke(mean);
         }
 
 
-        public void SaveState(string filePath) { }
+        public void SaveState(string filePath)
+        {
+            using var writer = new BinaryWriter(File.Open(filePath, FileMode.Create));
+
+            writer.Write(Width);              
+            writer.Write(Height);             
+            writer.Write(Conductivity);       
+            writer.Write(RainVolumeLiters);   
+
+            for (int y = 0; y < Height; y++)
+                for (int x = 0; x < Width; x++)
+                {
+                    var slice = slices[y, x];
+                    writer.Write(slice.Moisture);  
+                    writer.Write(slice.IsCracked); 
+                }
+        }
+
         public static SoilSimulator LoadState(string filePath)
         {
             using (var reader = new BinaryReader(File.Open(filePath, FileMode.Open)))

@@ -14,6 +14,8 @@ namespace UI.Controller
         private readonly Image imageControl;
         private readonly TextBlock fpsTextBlock;
         private readonly TextBlock paramsTextBlock;
+        public event Action<double>? StepCompleted;
+
 
         private int frameCount;
         private DateTime lastFpsTime;
@@ -42,7 +44,20 @@ namespace UI.Controller
         private void Timer_Tick(object sender, EventArgs e)
         {
             service.Step();
-            var bmp = renderer.Render(service.Grid);
+
+            double mean = 0;
+            var grid = service.Grid;
+            int h = service.Height, w = service.Width;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    mean += grid[y, x].Moisture;
+            mean /= h * w;
+
+            // вызываем подписчиков
+            StepCompleted?.Invoke(mean);
+            // --- конец блока для графика ---
+
+            var bmp = renderer.Render(grid);
             imageControl.Source = bmp;
 
             frameCount++;

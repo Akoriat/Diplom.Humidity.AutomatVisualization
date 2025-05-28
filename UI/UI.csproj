@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc5.4" />
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="3.119.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BL.Implementations\BL.Implementations.csproj" />
     <ProjectReference Include="..\Configs\Configs.csproj" />
     <ProjectReference Include="..\Entities\Entities.csproj" />

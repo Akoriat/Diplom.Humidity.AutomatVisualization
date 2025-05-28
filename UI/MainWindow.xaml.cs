@@ -2,8 +2,9 @@
 using Common.Configs;
 using Microsoft.Win32;
 using System.Windows;
-using System.Windows.Threading;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace UI
 {
@@ -15,23 +16,102 @@ namespace UI
         public MainWindow()
         {
             InitializeComponent();
+
+            DataContext = new MainViewModel();
+
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(100);
             timer.Tick += Timer_Tick;
         }
+        private void ApplySettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (simulator == null)
+                return;
+
+            for (int r = 0; r < simulator.Height; r++)
+            {
+                for (int c = 0; c < simulator.Width; c++)
+                {
+                    var slice = simulator.Grid[r, c];
+                    slice.ThetaS = ThetaSSlider.Value;
+                    slice.ThetaR = ThetaRSlider.Value;
+                    slice.Alpha = AlphaSlider.Value;
+                    slice.N = NSlider.Value;
+                    slice.Ks = KsSlider.Value;
+                }
+            }
+
+            simulator.Dz = DzSlider.Value;
+            simulator.Dx = DxSlider.Value;
+
+            MessageBox.Show("Параметры СВП применены ко всем ячейкам.", "Настройки",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        //private void StartButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    timer.Stop();
+
+        //    int width = (int)WidthSlider.Value;
+        //    int height = (int)HeightSlider.Value;
+        //    double conductivity = ConductivitySlider.Value;
+        //    double rainVolume = RainSlider.Value;
+        //    double initialMoisture = InitialMoistureSlider.Value / 100.0;
+        //    double crackChance = CrackChanceSlider.Value / 100.0;
+
+        //    simulator = new SoilSimulator(width, height);
+
+        //    simulator.Conductivity = conductivity;
+        //    simulator.RainVolumeLiters = rainVolume;
+        //    simulator.TimeStep = TimeStepSlider.Value;
+
+        //    for (int r = 0; r < simulator.Height; r++)
+        //    {
+        //        for (int c = 0; c < simulator.Width; c++)
+        //        {
+        //            simulator.Grid[r, c].Moisture = initialMoisture;
+        //        }
+        //    }
+
+        //    var rand = new Random();
+        //    for (int r = 0; r < simulator.Height; r++)
+        //    {
+        //        for (int c = 0; c < simulator.Width; c++)
+        //        {
+        //            if (rand.NextDouble() < crackChance)
+        //            {
+        //                simulator.Grid[r, c].IsCracked = true;
+        //            }
+        //        }
+        //    }
+
+        //    timer.Start();
+        //}
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            timer.Stop();
+            if (simulator != null)
+            {
+                if (!timer.IsEnabled)
+                    timer.Start();
+                return;
+            }
 
+            InitializeSimulator();
+            timer.Start();
+        }
+
+        private void InitializeSimulator()
+        {
             int width = (int)WidthSlider.Value;
             int height = (int)HeightSlider.Value;
             double conductivity = ConductivitySlider.Value;
             double rainVolume = RainSlider.Value;
             double initialMoisture = InitialMoistureSlider.Value / 100.0;
             double crackChance = CrackChanceSlider.Value / 100.0;
+            double dz = DzSlider.Value;
+            double dx = DxSlider.Value;
 
-            simulator = new SoilSimulator(width, height);
+            simulator = new SoilSimulator(width, height, dz, dx);
 
             simulator.Conductivity = conductivity;
             simulator.RainVolumeLiters = rainVolume;
@@ -56,8 +136,6 @@ namespace UI
                     }
                 }
             }
-
-            timer.Start();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -66,6 +144,15 @@ namespace UI
                 return;
 
             simulator.Step();
+
+            double mean = 0;
+            for (int r = 0; r < simulator.Height; r++)
+                for (int c = 0; c < simulator.Width; c++)
+                    mean += simulator.Grid[r, c].Moisture;
+            mean /= simulator.Height * simulator.Width;
+
+            var vm = (MainViewModel)DataContext;
+            vm.OnSimulationStepCompleted(mean);
 
             var renderer = new SliceRenderer(simulator.Width, simulator.Height);
             var bmp = renderer.Render(simulator.Grid);
@@ -80,9 +167,8 @@ namespace UI
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
             timer.Stop();
-
-            
-            StartButton_Click(sender, e);
+            InitializeSimulator();
+            timer.Start();
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -143,6 +229,12 @@ namespace UI
             if (simulator != null)
                 simulator.RainVolumeLiters = e.NewValue;
         }
-
+        private void GraphButton_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = (MainViewModel)DataContext;
+            var win = new GraphWindow(vm);
+            win.Owner = this;
+            win.Show();
+        }
     }
 }
