@@ -8,7 +8,7 @@
     </Window.DataContext>
     
     <TabControl>
-        <TabItem Header="Simulation">
+        <TabItem Header="Simulation" FontSize="18">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -27,34 +27,34 @@
                     <TextBlock Text="Легенда:" FontWeight="Bold" Margin="0 0 0 5"/>
                     <StackPanel Orientation="Horizontal" Margin="0 2">
                         <Rectangle Width="20" Height="20" Fill="White" Stroke="Black"/>
-                        <TextBlock Text=" – Сухая почва" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                        <TextBlock Text=" – Сухая почва" VerticalAlignment="Center" Margin="5 0 0 0" FontSize="16"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0 2">
                         <Rectangle Width="20" Height="20" Fill="LightBlue" Stroke="Black"/>
-                        <TextBlock Text=" – Умеренная влажность" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                        <TextBlock Text=" – Умеренная влажность" VerticalAlignment="Center" Margin="5 0 0 0" FontSize="16"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0 2">
                         <Rectangle Width="20" Height="20" Fill="Blue" Stroke="Black"/>
-                        <TextBlock Text=" – Максимальная влажность" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                        <TextBlock Text=" – Максимальная влажность" VerticalAlignment="Center" Margin="5 0 0 0" FontSize="16"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0 2">
                         <Rectangle Width="20" Height="20" Fill="Black"/>
-                        <TextBlock Text=" – Трещина" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                        <TextBlock Text=" – Трещина" VerticalAlignment="Center" Margin="5 0 0 0" FontSize="16"/>
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="167,5,0,5" >
-                    <Button Name="StartButton" Content="Пуск" Width="80" Margin="5" Click="StartButton_Click"/>
-                    <Button Name="StopButton" Content="Стоп" Width="80" Margin="5" Click="StopButton_Click"/>
-                    <Button Name="SaveButton" Content="Сохранить" Width="80" Margin="5" Click="SaveButton_Click"/>
-                    <Button Name="LoadButton" Content="Загрузить" Width="80" Margin="5" Click="LoadButton_Click"/>
-                    <Button Name="RestartButton" Content="Рестарт" Width="80" Margin="5" Click="RestartButton_Click"/>
-                    <Button Content="График" Width="80" Margin="5" Click="GraphButton_Click"/>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="113,5,0,5" Width="635" >
+                    <Button Name="StartButton" Content="Пуск" Width="80" Margin="5" Click="StartButton_Click" FontSize="18"/>
+                    <Button Name="StopButton" Content="Стоп" Width="80" Margin="5" Click="StopButton_Click" FontSize="18"/>
+                    <Button Name="SaveButton" Content="Сохранить" Width="103" Margin="5" Click="SaveButton_Click" FontSize="18"/>
+                    <Button Name="LoadButton" Content="Загрузить" Width="98" Margin="5" Click="LoadButton_Click" FontSize="18"/>
+                    <Button Name="RestartButton" Content="Рестарт" Width="80" Margin="5" Click="RestartButton_Click" FontSize="18"/>
+                    <Button Content="График" Width="80" Margin="5" Click="GraphButton_Click" FontSize="18"/>
                 </StackPanel>
             </Grid>
         </TabItem>
 
-        <TabItem Header="Settings">
+        <TabItem Header="Settings" FontSize="18">
             <ScrollViewer>
                 <Grid Margin="10" Grid.IsSharedSizeScope="True">
                     <Grid.RowDefinitions>
